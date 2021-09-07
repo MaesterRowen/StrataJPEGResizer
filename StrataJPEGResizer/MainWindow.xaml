@@ -18,6 +18,12 @@
                 <Separator/>
                 <MenuItem Header="_Quit"></MenuItem>
             </MenuItem>
+            <MenuItem Header="_Options" HorizontalAlignment="Left">
+                <MenuItem Header="Keep EXIF Data"></MenuItem>
+                <MenuItem Header="Append '_rsz' to Resized Photos"></MenuItem>
+                <MenuItem Header="Create Original Resolution Photo"></MenuItem>
+                <MenuItem Header="Overwrite Existing Files"></MenuItem>
+            </MenuItem>
         </Menu>
         <Grid DockPanel.Dock="Bottom" MinHeight="600">
             <Grid.RowDefinitions>
@@ -100,6 +106,8 @@
                 </WrapPanel>
                 <DockPanel Width="auto" Margin="5px,10px,5px,5px">
                     <CheckBox x:Name="chkAppend" DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14px" Content="Append '_rsz' to Filename" IsChecked="True"></CheckBox>
+                    <!--<CheckBox x:Name="chkOriginal" DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14px" Content="Convert Original Resolution" IsChecked="True"></CheckBox>-->
+                    <!--<CheckBox x:Name="chkOverwrite" DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14px" Content="Append '_rsz' to Filename" IsChecked="True"></CheckBox>-->
                     <Button x:Name="btnConvert" Click="btnConvert_Click" Content="Convert" HorizontalAlignment="Right" DockPanel.Dock="Right" Width="128px" Height="28px"/>
                 </DockPanel>
             </StackPanel>
