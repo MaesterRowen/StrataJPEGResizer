@@ -4,24 +4,105 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StrataJPEGResizer"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="40" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="40" />
-        </Grid.RowDefinitions>
-        <Label x:Name="fileNameLabel" Grid.Row="0" Content="" HorizontalAlignment="Center" FontSize="16"/>
-        <StackPanel 
-            x:Name="fileDropStackPanel"
-            Grid.Row="1"
-            AllowDrop="True" 
-            Background="LightGray" 
-            Margin="40,0,40,0"
-            Drop="fileDropStackPanel_Drop"
-        >
-            <Label Content="Drop Files Here" HorizontalAlignment="Center"/>
-        </StackPanel>
-    </Grid>
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Title="MainWindow" MinHeight="750" MaxHeight="960" Height="800" MinWidth="700" MaxWidth="700" Width="700">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File" HorizontalAlignment="Left">
+                <MenuItem Header="About"></MenuItem>
+                <Separator/>
+                <MenuItem Header="Open Files"></MenuItem>
+                <MenuItem Header="Open Directory"></MenuItem>
+                <Separator/>
+                <MenuItem Header="_Quit"></MenuItem>
+            </MenuItem>
+        </Menu>
+        <Grid DockPanel.Dock="Bottom" MinHeight="600">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="10" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="150" />
+            </Grid.RowDefinitions>
+            <ListView
+                x:Name="fileDropListView"
+                Grid.Row="1"
+                AllowDrop="True"
+                Background="GhostWhite"
+                Margin="10,0,10,0"
+                Drop="fileDropStackPanel_Drop"
+                DragEnter="fileDropStackPanel_DragEnter"
+                DragLeave="fileDropStackPanel_DragLeave"
+                ItemsSource="{Binding Path=itemList}"
+            >
+                <ListView.Resources>
+                    <ContextMenu x:Key="ItemContextMenu" Focusable="False">
+                        <MenuItem Focusable="False" Header="_Bold" Click="MenuItem_Click"/>
+                        <MenuItem Focusable="False" Header="_Italic" Click="MenuItem_Click"/>
+                    </ContextMenu>
+                </ListView.Resources>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="BorderBrush" Value="DarkGray"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,0.5"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="ContextMenu" Value="{StaticResource ItemContextMenu}"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="2px,5px,2px,5px">
+                            <WrapPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="64px"></ColumnDefinition>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Width="64px" Height="64px">
+                                        <fa:ImageAwesome HorizontalAlignment="Center" Opacity="0.25"  VerticalAlignment="Center" Visibility="{Binding Visibility}" Grid.Column="0" Icon="Spinner" Width="48px" Height="48px" Spin="True"></fa:ImageAwesome>
+                                    </Grid>
+                                    <!--<Rectangle Width="64px" Height="64px" Fill="DarkGray"></Rectangle>-->
+                                    <Image Grid.Column="0" Width="64px" Height="64px" HorizontalAlignment="Center" Source="{Binding ImageData}"></Image>
+                                </Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}" FontSize="16px" Margin="15px,0px,15px,5px"></TextBlock>
+                                    <TextBlock Text="{Binding Path}" FontSize="14px" Margin="15px,0px,15px,0px" FontWeight="Thin" FontStyle="Italic"></TextBlock>
+                                </StackPanel>
+                            </WrapPanel>
+                            <ProgressBar Margin="74px,0,0,0" Opacity="{Binding Opacity}" Value="{Binding Progress}"></ProgressBar>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <StackPanel Grid.Row="2" Margin="10px,5px,10px,0px" Background="GhostWhite">
+                <WrapPanel Margin="0px, 15px, 0px, 0px">
+                    <Label Width="64px" Content="Format:" VerticalAlignment="Center" FontSize="14px" FontWeight="Normal"></Label>
+                    <ComboBox x:Name="cmbFormat" Margin="10px,0,20px,0" SelectedItem="JPEG" Width="80px" Height="22px" HorizontalContentAlignment="Left" VerticalContentAlignment="Center">
+                        <ComboBoxItem Content="JPEG"></ComboBoxItem>
+                        <ComboBoxItem Content="PNG"></ComboBoxItem>
+                    </ComboBox>
+                    <CheckBox x:Name="chkKeepExif" Content="Keep EXIF data" IsChecked="True" FontSize="14px" VerticalAlignment="Center"></CheckBox>
+                </WrapPanel>
+                <WrapPanel>
+                    <Label Width="64px" Content="Size:" VerticalAlignment="Center" FontSize="14px" FontWeight="Normal"></Label>
+                    <RadioButton x:Name="radOriginal" Content="Original" Margin="0px,0px,30px,0px" VerticalContentAlignment="Center" FontSize="14px" FontWeight="Normal"></RadioButton>
+                    <RadioButton x:Name="rad800x600" Content="800 x 600" Margin="0px,0px,30px,0px" VerticalContentAlignment="Center" FontSize="14px" FontWeight="Normal"></RadioButton>
+                    <RadioButton x:Name="rad1600x1200" Content="1600 x 1200" Margin="0px,0px,30px,0px" VerticalContentAlignment="Center" FontSize="14px" FontWeight="Normal"></RadioButton>
+                    <RadioButton x:Name="radCustom" Content="Custom" Margin="0px,0px,10px,0px" VerticalContentAlignment="Center" FontSize="14px" FontWeight="Normal" Checked="radCustom_Checked" Unchecked="radCustom_Unchecked"></RadioButton>
+                    <TextBox x:Name="txtCustH" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Width="64px" Height="24px"></TextBox>
+                    <TextBlock Text=" x " VerticalAlignment="Center"></TextBlock>
+                    <TextBox x:Name="txtCustV" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Width="64px" Height="24px"></TextBox>
+                </WrapPanel>
+                <WrapPanel>
+                    <Label Width="64px" Content="Quality:" VerticalAlignment="Center" FontSize="14px" FontWeight="Normal"></Label>
+                    <Slider x:Name="sldQuality" Margin="10px,0,0,0" Width="300px" VerticalAlignment="Center" Value="100"></Slider>
+                    <TextBlock Text="100" Margin="10px,0,0,0" FontSize="14px" VerticalAlignment="Center"></TextBlock>
+                </WrapPanel>
+                <DockPanel Width="auto" Margin="5px,10px,5px,5px">
+                    <CheckBox x:Name="chkAppend" DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14px" Content="Append '_rsz' to Filename" IsChecked="True"></CheckBox>
+                    <Button x:Name="btnConvert" Click="btnConvert_Click" Content="Convert" HorizontalAlignment="Right" DockPanel.Dock="Right" Width="128px" Height="28px"/>
+                </DockPanel>
+            </StackPanel>
+        </Grid>
+    </DockPanel>
 </Window>
