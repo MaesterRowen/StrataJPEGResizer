@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Media.Imaging;
 using System;
 using System.Collections.Generic;
+using System.Windows.Controls;
 
 namespace StrataJPEGResizer
 {
@@ -77,7 +78,7 @@ namespace StrataJPEGResizer
             txtCustH.Text = "";
             txtCustV.Text = "";
             cmbFormat.Text = "JPEG";
-            sldQuality.Value = 100;
+            sldQuality.Value = 90;
             rad1600x1200.IsChecked = true;
             chkAppend.IsChecked = true;
             chkKeepExif.IsChecked = true;
@@ -136,7 +137,7 @@ namespace StrataJPEGResizer
 
                             MagickGeometry geometry = new MagickGeometry(128, 128);
                             image.Format = MagickFormat.Bmp;
-                            image.Quality = 100;
+                            image.Quality = 50;
                             image.Resize(geometry);
                             var memStream = new MemoryStream();
 
@@ -200,53 +201,97 @@ namespace StrataJPEGResizer
                 }
             }
         }
-        private void btnConvert_Click(object sender, RoutedEventArgs e)
+        private async void btnConvert_Click(object sender, RoutedEventArgs e)
         {
             // Disable the list view
             state = !state;
             toggleWindowState(state);
 
-            //Console.WriteLine(cmbFormat.SelectedValue);
+            // Store our settings
 
-            // Loop through each item in our list and convert
-            //for( int i = 0; i < itemList.Count; i++ )
-            //{
-            //    itemList[i].Progress = 100;
-            //    itemList[i].Opacity = 0.5f;
-            //}
-            var t = Task.Run(() =>
+
+            MagickFormat nFormat = MagickFormat.Jpeg;
+            if (cmbFormat.Text == "PNG")
+            {
+                nFormat = MagickFormat.Png;
+            }
+                
+                
+            bool bKeepExifData = true;
+            int nResX = 1600;
+            int nResY = 1200;
+            int nQuality = (int)sldQuality.Value;
+            bool bResize = true;
+            bool bAppendRsz = chkAppend.IsChecked == true;
+            string extension = ".jpg";
+
+            if( nFormat == MagickFormat.Png )
+            {
+                extension = ".png";
+            }
+
+            if (radOriginal.IsChecked == true)
+            {
+                bResize = false;
+            }
+            else if (rad800x600.IsChecked == true)
+            {
+                nResX = 800;
+                nResY = 600;
+                bResize = true;
+            }
+            else if (rad1600x1200.IsChecked == true)
+            {
+                nResX = 1600;
+                nResY = 1200;
+                bResize = true;
+            }
+            else if (radCustom.IsChecked == true)
+            {
+                int.TryParse(txtCustH.Text, out nResX);
+                int.TryParse(txtCustV.Text, out nResY);
+                bResize = true;
+            }
+
+            await Task.Run(() =>
             {
                 Parallel.ForEach(itemList, new ParallelOptions { MaxDegreeOfParallelism = 5},
                 item =>
                 {
                     item.Opacity = 0.5f;
-                    using (var image = new MagickImage())
+                    if( bResize )
                     {
-                        image.Read(item.Path + "\\" + item.Name);
-                        image.Progress += Image_Progress;
+                        using (var image = new MagickImage())
+                        {
+                            image.Read(item.Path + "\\" + item.Name);
+                            image.Progress += Image_Progress;
 
-                        image.Format = MagickFormat.Jpeg;
-                        image.Quality = 100;
+                            image.Format = nFormat;
+                            image.Quality = nQuality;
 
-                        // Create the subfolder
-                        string resizeDir = item.Path + "\\Converted\\Resize";
-                        Directory.CreateDirectory(resizeDir);
-                        image.Resize(1600, 1200);
-                        image.Write(resizeDir + "\\" + item.NewName + "_rsz.jpg");
+                            // Create the subfolder
+                            string resizeDir = item.Path + "\\Converted\\Resize";
+                            Directory.CreateDirectory(resizeDir);
+                            image.Resize(nResX, nResY);
+                            image.Write(resizeDir + "\\" + item.NewName + (bAppendRsz ? "_rsz" : "") + extension);
+                        }
                     }
 
                     using (var image = new MagickImage())
                     {
                         image.Read(item.Path + "\\" + item.Name);
-                        image.Format = MagickFormat.Jpeg;
+                        image.Format = nFormat;
                         image.Quality = 100;
                         // Create the subfolder
                         string convert = item.Path + "\\Converted";
                         Directory.CreateDirectory(convert);
-                        image.Write(convert + "\\" + item.NewName + ".jpg");
+                        image.Write(convert + "\\" + item.NewName + extension);
                     }
                 });
             });
+
+            toggleWindowState(true);
+            itemList.Clear();
         }
 
         private void radCustom_Checked(object sender, RoutedEventArgs e)
@@ -272,6 +317,29 @@ namespace StrataJPEGResizer
             foreach( ListItem i in items )
             {
                 itemList.Remove(i);
+            }
+        }
+
+        private void sldQuality_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if( sender == sldQuality && txtQuality != null )
+            {
+                txtQuality.Text = ((int)(e.NewValue)).ToString() + "%";
+            }
+        }
+
+        private void cmbFormat_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if( sender == cmbFormat && sldQuality != null && chkKeepExif != null)
+            {
+                ComboBoxItem typeItem = (ComboBoxItem)e.AddedItems[0];
+                if( typeItem != null)
+                {
+                    string contentText = typeItem.Content.ToString();
+
+                    sldQuality.IsEnabled = contentText == "JPEG";
+                    chkKeepExif.IsEnabled = contentText == "JPEG";
+                }
             }
         }
     }
