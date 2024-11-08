@@ -267,12 +267,12 @@ namespace StrataJPEGResizer
                             image.Progress += Image_Progress;
 
                             image.Format = nFormat;
-                            image.Quality = nQuality;
+                            image.Quality = (uint)nQuality;
 
                             // Create the subfolder
                             string resizeDir = item.Path + "\\Converted\\Resize";
                             Directory.CreateDirectory(resizeDir);
-                            image.Resize(nResX, nResY);
+                            image.Resize((uint)nResX, (uint)nResY);
                             image.Write(resizeDir + "\\" + item.NewName + (bAppendRsz ? "_rsz" : "") + extension);
                         }
                     }
